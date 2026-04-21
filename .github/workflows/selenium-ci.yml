@@ -17,6 +17,18 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Install Chrome system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libnspr4 \
+            libnss3 \
+            libgbm1 \
+            libatk-bridge2.0-0 \
+            libgtk-3-0 \
+            libxss1 \
+            libasound2
+
       - name: Setup Chrome
         id: chrome
         uses: browser-actions/setup-chrome@v1
