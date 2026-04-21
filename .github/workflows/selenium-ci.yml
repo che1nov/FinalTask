@@ -32,6 +32,14 @@ jobs:
       - name: Setup Chrome
         id: chrome
         uses: browser-actions/setup-chrome@v1
+        with:
+          chrome-version: stable
+
+      - name: Remove preinstalled chromedriver
+        run: |
+          if command -v chromedriver >/dev/null 2>&1; then
+            sudo rm -f "$(command -v chromedriver)"
+          fi
 
       - name: Install dependencies
         run: |
