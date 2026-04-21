@@ -1,0 +1,51 @@
+name: Selenium Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  selenium:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Setup Chrome
+        id: chrome
+        uses: browser-actions/setup-chrome@v1
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Start app
+        run: |
+          python -m http.server 4173 --directory dist > server.log 2>&1 &
+          echo $! > server.pid
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:4173 >/dev/null; then
+              break
+            fi
+            sleep 1
+          done
+
+      - name: Run Selenium tests
+        env:
+          BASE_URL: http://127.0.0.1:4173
+          CHROME_BIN: ${{ steps.chrome.outputs.chrome-path }}
+        run: pytest tests/selenium -q --maxfail=2
+
+      - name: Stop app
+        if: always()
+        run: |
+          if [ -f server.pid ]; then
+            kill $(cat server.pid) || true
+          fi
